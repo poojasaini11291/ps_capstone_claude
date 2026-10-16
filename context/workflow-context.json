@@ -1,12 +1,12 @@
 {
     "workflow_id": "WF-2026-001",
     "project_name": "Task Management API",
-    "current_stage": "release",
-    "status": "IN_PROGRESS",
+    "current_stage": "complete",
+    "status": "COMPLETED",
     "human_approvals": {
         "requirements": true,
         "implementation_plan": true,
-        "pr_merge": false
+        "pr_merge": true
     },
     "artifacts": {
         "requirements": "docs/plans/requirements.md",
@@ -15,7 +15,7 @@
         "implementation_plan": "docs/plans/impl-plan.md",
         "code_review": "docs/plans/code-review.md",
         "verification": "docs/plans/verification.md",
-        "pull_request": "AWAITING_APPROVAL"
+        "pull_request": "https://github.com/poojasaini11291/ps_capstone_claude/pull/1"
     },
     "execution_history": [
         {
