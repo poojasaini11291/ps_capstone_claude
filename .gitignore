@@ -1,0 +1,20 @@
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Claude local settings
+.claude/settings.local.json
+
+# IDE and system
+.vscode/
+.DS_Store

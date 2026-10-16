@@ -1,0 +1,43 @@
+{
+    "workflow_id": "WF-2026-001",
+    "project_name": "Task Management API",
+    "current_stage": "development",
+    "status": "IN_PROGRESS",
+    "human_approvals": {
+        "requirements": true,
+        "implementation_plan": true,
+        "pr_merge": false
+    },
+    "artifacts": {
+        "requirements": "docs/plans/requirements.md",
+        "architecture": "docs/plans/architecture.md",
+        "design_review": "docs/plans/design-review.md",
+        "implementation_plan": "docs/plans/impl-plan.md",
+        "code_review": null,
+        "verification": null,
+        "pull_request": null
+    },
+    "execution_history": [
+        {
+            "stage": "requirements",
+            "status": "COMPLETED",
+            "artifact": "docs/plans/requirements.md",
+            "human_approved": true,
+            "timestamp": "2026-10-17"
+        },
+        {
+            "stage": "architecture",
+            "status": "COMPLETED",
+            "artifact": "docs/plans/architecture.md",
+            "human_approved": false,
+            "timestamp": "2026-10-17"
+        },
+        {
+            "stage": "design_review",
+            "status": "COMPLETED",
+            "artifact": "docs/plans/design-review.md",
+            "human_approved": false,
+            "timestamp": "2026-10-17"
+        }
+    ]
+}
