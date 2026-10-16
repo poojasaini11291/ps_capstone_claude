@@ -1,7 +1,7 @@
 {
     "workflow_id": "WF-2026-001",
     "project_name": "Task Management API",
-    "current_stage": "verification",
+    "current_stage": "release",
     "status": "IN_PROGRESS",
     "human_approvals": {
         "requirements": true,
@@ -14,8 +14,8 @@
         "design_review": "docs/plans/design-review.md",
         "implementation_plan": "docs/plans/impl-plan.md",
         "code_review": "docs/plans/code-review.md",
-        "verification": null,
-        "pull_request": null
+        "verification": "docs/plans/verification.md",
+        "pull_request": "AWAITING_APPROVAL"
     },
     "execution_history": [
         {
