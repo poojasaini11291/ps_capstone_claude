@@ -30,4 +30,4 @@ Implement KAN-25 as a locally runnable Calculator Web Application using FastAPI 
 
 ## Approval Status
 
-PR #3 is open from `feature/KAN-25-calculator` into `main`: https://github.com/poojasaini11291/ps_capstone_claude/pull/3. Final human review and separate approval before merge are pending.
+PR #3 was merged into `main` after explicit human approval: https://github.com/poojasaini11291/ps_capstone_claude/pull/3. Merge commit: `a4aea74b1a28e59f6c2ddf566883c41841e4884e`.
