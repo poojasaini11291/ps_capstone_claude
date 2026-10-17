@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SDLC Workflow Report WF-2026-003</title>
+  <style>
+    :root { color-scheme: light; font-family: "Trebuchet MS", sans-serif; color: #202a26; background: #edf1eb; }
+    body { max-width: 1040px; margin: 0 auto; padding: 36px 22px; }
+    header, section { margin-bottom: 24px; padding: 24px; border: 1px solid #dbe2db; border-radius: 6px; background: #fffefa; }
+    h1, h2 { margin-top: 0; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: 38px; font-weight: 400; }
+    h2 { font-size: 18px; }
+    p, td, th { line-height: 1.5; }
+    .status { display: inline-block; padding: 6px 10px; border-radius: 3px; background: #fff0c2; color: #61470a; font-size: 13px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #e5eae3; vertical-align: top; }
+    th { color: #164d3b; font-size: 12px; }
+    a { color: #164d3b; }
+    .muted { color: #65726b; }
+    @media (max-width: 620px) { body { padding: 20px 12px; } header, section { padding: 18px; } th, td { padding: 8px 6px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="muted">AGENTIC SDLC / KAN-25</p>
+    <h1>Calculator Web Application</h1>
+    <p><span class="status">Awaiting final PR review</span></p>
+    <p>Workflow WF-2026-003 ran against the verified Jira story and approved calculator scope. The pull request is open; no merge has been performed.</p>
+  </header>
+
+  <section>
+    <h2>Stage Evidence</h2>
+    <table>
+      <thead><tr><th>Stage</th><th>Status</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Requirements</td><td>Approved</td><td><a href="plans/requirements.md">KAN-25 requirements</a>; explicit user approval recorded.</td></tr>
+        <tr><td>Architecture</td><td>Complete</td><td><a href="plans/architecture.md">Stateless FastAPI and browser architecture</a>; no database.</td></tr>
+        <tr><td>Design review</td><td>Approved</td><td><a href="plans/design-review.md">Coverage and design findings</a>; Addition confirmed as default.</td></tr>
+        <tr><td>Implementation planning</td><td>Approved</td><td><a href="plans/impl-plan.md">KAN-25 implementation plan</a>.</td></tr>
+        <tr><td>Development</td><td>Complete</td><td>Calculator UI, four operations, decimal arithmetic, and local FastAPI route.</td></tr>
+        <tr><td>Code review</td><td>Pass</td><td><a href="plans/code-review.md">No blocker, major, or minor findings</a>. Review performed inline because custom-profile invocation was unavailable.</td></tr>
+        <tr><td>Verification</td><td>Pass</td><td><a href="plans/verification.md">7 pytest cases passed</a>; browser Calculate/Clear and responsive widths checked.</td></tr>
+        <tr><td>Release</td><td>PR open</td><td><a href="https://github.com/poojasaini11291/ps_capstone_claude/pull/3">Pull request #3</a> from <code>feature/KAN-25-calculator</code> to <code>main</code>.</td></tr>
+        <tr><td>Final PR review / merge</td><td>Pending human action</td><td>Separate explicit approval is required before merge. No merge was attempted.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Verification Summary</h2>
+    <p><code>python -m pytest -q</code>: 7 passed, 0 failed. Two upstream Starlette/httpx deprecation warnings were emitted.</p>
+    <p>Browser verification confirmed 2.5 + 1.5 displays 4, Clear empties both fields and the result and restores Addition, and the page has no horizontal overflow at the tested mobile and desktop widths.</p>
+    <p class="muted">Earlier completed workflows WF-2026-001 and WF-2026-002 are preserved in <code>context/workflow-context.json</code>. No approvals, test outcomes, or merge results have been inferred.</p>
+  </section>
+</body>
+</html>
