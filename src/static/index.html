@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#edf1eb">
+    <title>Quick Arithmetic</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
+</head>
+
+<body>
+    <main class="page-shell">
+        <header class="masthead">
+            <a class="wordmark" href="/" aria-label="Quick Arithmetic home">
+                <span class="wordmark-symbol" aria-hidden="true">+</span>
+                <span>QUICK ARITHMETIC</span>
+            </a>
+            <span class="local-tag"><span class="status-dot"></span> LOCAL TOOL</span>
+        </header>
+
+        <section class="calculator" aria-labelledby="page-title">
+            <div class="intro">
+                <p class="eyebrow">THE EVERYDAY CALCULATOR</p>
+                <h1 id="page-title">Numbers, <span>settled.</span></h1>
+                <p class="intro-copy">Two values. One operation. An answer you can move on with.</p>
+            </div>
+
+            <form id="calculator-form" class="calculator-form">
+                <div class="inputs-row">
+                    <label class="number-field" for="first-number">
+                        <span class="field-label"><span>01</span> FIRST NUMBER</span>
+                        <input id="first-number" name="first_number" type="number" step="any" inputmode="decimal"
+                            placeholder="0" required>
+                    </label>
+                    <span class="operator-mark" aria-hidden="true">+</span>
+                    <label class="number-field" for="second-number">
+                        <span class="field-label"><span>02</span> SECOND NUMBER</span>
+                        <input id="second-number" name="second_number" type="number" step="any" inputmode="decimal"
+                            placeholder="0" required>
+                    </label>
+                </div>
+
+                <div class="controls-row">
+                    <label class="operation-field" for="operation">
+                        <span class="field-label"><span>03</span> OPERATION</span>
+                        <select id="operation" name="operation">
+                            <option value="addition">Addition (+)</option>
+                            <option value="subtraction">Subtraction (-)</option>
+                            <option value="multiplication">Multiplication (×)</option>
+                            <option value="division">Division (÷)</option>
+                        </select>
+                    </label>
+                    <div class="actions">
+                        <button class="calculate-button" type="submit">Calculate <span
+                                aria-hidden="true">↗</span></button>
+                        <button class="clear-button" id="clear-button" type="button">Clear</button>
+                    </div>
+                </div>
+            </form>
+
+            <section class="result-panel" aria-labelledby="result-label">
+                <div class="result-copy">
+                    <p class="field-label" id="result-label"><span>04</span> YOUR RESULT</p>
+                    <p class="result-hint" id="result-hint">Your answer will appear here.</p>
+                </div>
+                <output id="result" class="result-value" aria-live="polite"></output>
+            </section>
+            <p id="error-message" class="error-message" role="alert" hidden></p>
+        </section>
+
+        <footer class="page-footer">
+            <span>Built for the quick questions.</span>
+            <span>ADD <i></i> SUBTRACT <i></i> MULTIPLY <i></i> DIVIDE</span>
+        </footer>
+    </main>
+</body>
+
+</html>

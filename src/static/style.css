@@ -1,0 +1,403 @@
+:root {
+  color-scheme: light;
+  font-family: "Trebuchet MS", "Century Gothic", sans-serif;
+  color: #202a26;
+  background: #edf1eb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --ink: #202a26;
+  --muted: #65726b;
+  --line: #dbe2db;
+  --paper: #fffefa;
+  --forest: #164d3b;
+  --lime: #d8ef84;
+  --coral: #cf6049;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background-image: linear-gradient(#dfe6df 1px, transparent 1px), linear-gradient(90deg, #dfe6df 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.page-shell {
+  width: min(100% - 40px, 920px);
+  margin: 0 auto;
+  padding: 28px 0 24px;
+}
+
+.masthead,
+.wordmark,
+.local-tag,
+.inputs-row,
+.controls-row,
+.actions,
+.result-panel,
+.page-footer {
+  display: flex;
+  align-items: center;
+}
+
+.masthead,
+.page-footer {
+  justify-content: space-between;
+}
+
+.wordmark {
+  gap: 10px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-decoration: none;
+}
+
+.wordmark-symbol {
+  display: grid;
+  width: 28px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--forest);
+  font-size: 21px;
+  font-weight: 500;
+}
+
+.local-tag {
+  gap: 8px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.status-dot {
+  width: 7px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #5f9a64;
+  box-shadow: 0 0 0 3px #d9e9d7;
+}
+
+.calculator {
+  margin: 74px auto 0;
+  padding: 48px 56px 36px;
+  border: 1px solid #e3e8e1;
+  border-radius: 6px;
+  background: var(--paper);
+  box-shadow: 0 18px 55px rgb(33 53 42 / 8%);
+}
+
+.intro {
+  margin-bottom: 39px;
+}
+
+.eyebrow,
+.field-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.eyebrow {
+  margin-bottom: 12px;
+  color: var(--forest);
+}
+
+h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 50px;
+  font-weight: 400;
+  line-height: 1.04;
+}
+
+h1 span {
+  color: var(--forest);
+  font-style: italic;
+}
+
+.intro-copy {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.inputs-row {
+  gap: 18px;
+}
+
+.number-field,
+.operation-field {
+  display: grid;
+  flex: 1;
+  gap: 11px;
+  min-width: 0;
+}
+
+.field-label span {
+  margin-right: 8px;
+  color: #9aa59c;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.number-field input,
+.operation-field select {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  outline: none;
+  background: #fbfcf8;
+  color: var(--ink);
+}
+
+.number-field input {
+  padding: 10px 16px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 25px;
+}
+
+.number-field input::placeholder {
+  color: #aab4ad;
+}
+
+.number-field input:focus,
+.operation-field select:focus {
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgb(22 77 59 / 12%);
+}
+
+.operator-mark {
+  align-self: end;
+  display: grid;
+  width: 34px;
+  aspect-ratio: 1;
+  margin-bottom: 12px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f0f4ed;
+  color: var(--forest);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+}
+
+.controls-row {
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 26px;
+}
+
+.operation-field {
+  max-width: 320px;
+}
+
+.operation-field select {
+  padding: 0 42px 0 14px;
+  font-size: 14px;
+}
+
+.actions {
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.calculate-button,
+.clear-button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.calculate-button {
+  display: inline-flex;
+  min-width: 150px;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--forest);
+  color: white;
+}
+
+.calculate-button span {
+  color: var(--lime);
+  font-size: 18px;
+}
+
+.calculate-button:hover {
+  background: #0f3e2e;
+}
+
+.calculate-button:active,
+.clear-button:active {
+  transform: translateY(1px);
+}
+
+.clear-button {
+  padding: 0 12px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.clear-button:hover {
+  background: #f1f4ef;
+  color: var(--ink);
+}
+
+.result-panel {
+  min-height: 112px;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 34px;
+  padding: 20px 24px;
+  border-left: 3px solid var(--lime);
+  background: #f2f5ef;
+}
+
+.result-copy {
+  min-width: 0;
+}
+
+.result-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.result-value {
+  overflow-wrap: anywhere;
+  color: var(--forest);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 5vw, 42px);
+  text-align: right;
+}
+
+.error-message {
+  margin: 14px 0 0;
+  color: var(--coral);
+  font-size: 13px;
+}
+
+.page-footer {
+  gap: 18px;
+  margin-top: 22px;
+  color: #68746c;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.page-footer span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.page-footer i {
+  width: 3px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--coral);
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    width: min(100% - 28px, 480px);
+    padding-top: 18px;
+  }
+
+  .calculator {
+    margin-top: 42px;
+    padding: 32px 22px 24px;
+  }
+
+  h1 {
+    font-size: 38px;
+  }
+
+  .intro {
+    margin-bottom: 30px;
+  }
+
+  .inputs-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .operator-mark {
+    align-self: center;
+    width: 28px;
+    margin: -6px 0;
+    font-size: 18px;
+  }
+
+  .controls-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .operation-field {
+    max-width: none;
+  }
+
+  .actions {
+    justify-content: space-between;
+    padding-top: 8px;
+  }
+
+  .calculate-button {
+    flex: 1;
+  }
+
+  .result-panel {
+    min-height: 100px;
+    padding: 17px;
+  }
+
+  .result-value {
+    font-size: 30px;
+  }
+
+  .page-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
