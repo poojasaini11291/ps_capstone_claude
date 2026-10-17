@@ -1,8 +1,9 @@
 from fastapi import FastAPI
-from database import create_tables
-from routers.tasks import router as tasks_router
 
-create_tables()
+from src.database import engine, Base
+from src.routers.tasks import router as tasks_router
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Task Management API")
 
