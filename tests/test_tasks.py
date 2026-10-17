@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from database import Base, get_db
-from main import app
+from src.database import Base, get_db
+from src.main import app
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
 
@@ -123,7 +123,7 @@ def test_delete_task():
     task_id = created.json()["id"]
     response = client.delete(f"/tasks/{task_id}")
     assert response.status_code == 200
-    assert f"Task with ID {task_id} deleted successfully" in response.json()["message"]
+    assert f"Task with ID {task_id} has been deleted" in response.json()["message"]
 
 
 # FR-005: Task is gone after deletion
