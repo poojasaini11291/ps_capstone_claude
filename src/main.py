@@ -1,18 +1,11 @@
-from pathlib import Path
-
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
-from src.routers.calculator import router as calculator_router
+from src.database import Base, engine
+from src.routers.tasks import router as tasks_router
 
-STATIC_DIR = Path(__file__).parent / "static"
+# Create database tables on startup
+Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Calculator")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-app.include_router(calculator_router, tags=["calculator"])
+app = FastAPI(title="Task Management API")
 
-
-@app.get("/", include_in_schema=False)
-def calculator_page() -> FileResponse:
-	return FileResponse(STATIC_DIR / "index.html")
+app.include_router(tasks_router, prefix="/tasks", tags=["tasks"])

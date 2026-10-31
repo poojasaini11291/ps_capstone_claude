@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SDLC Workflow Report WF-2026-004</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Trebuchet MS", sans-serif;
+            color: #202a26;
+            background: #edf1eb;
+        }
+
+        body {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 36px 22px;
+        }
+
+        header,
+        section {
+            margin-bottom: 24px;
+            padding: 24px;
+            border: 1px solid #dbe2db;
+            border-radius: 6px;
+            background: #fffefa;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin-top: 0;
+        }
+
+        h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 38px;
+            font-weight: 400;
+        }
+
+        h2 {
+            font-size: 18px;
+            border-bottom: 1px solid #e5eae3;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        h3 {
+            font-size: 15px;
+            color: #164d3b;
+            margin-top: 20px;
+        }
+
+        p,
+        td,
+        th,
+        li {
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-approved { background: #d4edda; color: #155724; }
+        .badge-completed { background: #d1ecf1; color: #0c5460; }
+        .badge-passed { background: #d4edda; color: #155724; }
+        .badge-human { background: #fff3cd; color: #856404; }
+        .badge-inprogress { background: #fff0c2; color: #61470a; }
+
+        .status-block {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 3px;
+            background: #d4edda;
+            color: #155724;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5eae3;
+            vertical-align: top;
+        }
+
+        th {
+            color: #164d3b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: #f5f8f4;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        a {
+            color: #164d3b;
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: #0d3327;
+        }
+
+        .muted {
+            color: #65726b;
+            font-size: 13px;
+        }
+
+        code {
+            background: #f0f4ef;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 13px;
+        }
+
+        pre {
+            background: #f0f4ef;
+            padding: 16px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-tile {
+            background: #f5f8f4;
+            border: 1px solid #dbe2db;
+            border-radius: 6px;
+            padding: 16px 18px;
+            text-align: center;
+        }
+
+        .stat-tile .num {
+            font-family: Georgia, serif;
+            font-size: 36px;
+            font-weight: 400;
+            color: #164d3b;
+            line-height: 1.1;
+        }
+
+        .stat-tile .label {
+            font-size: 12px;
+            color: #65726b;
+            margin-top: 4px;
+        }
+
+        .finding-minor { background: #fff8e1; border-left: 3px solid #f59e0b; padding: 10px 14px; margin: 6px 0; border-radius: 0 4px 4px 0; }
+        .finding-info { background: #f0f4ef; border-left: 3px solid #6b9e7a; padding: 10px 14px; margin: 6px 0; border-radius: 0 4px 4px 0; }
+
+        .stage-row td:first-child {
+            font-weight: 600;
+        }
+
+        .approvals-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .approvals-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5eae3;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .approvals-list li:last-child {
+            border-bottom: none;
+        }
+
+        .checkmark {
+            color: #28a745;
+            font-size: 16px;
+        }
+
+        @media (max-width: 620px) {
+            body { padding: 20px 12px; }
+            header, section { padding: 18px; }
+            th, td { padding: 8px 6px; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            h1 { font-size: 28px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ====== HEADER ====== -->
+    <header>
+        <p class="muted">AGENTIC SDLC / WF-2026-004 / KAN-31</p>
+        <h1>Task Management REST API</h1>
+        <p><span class="status-block">COMPLETED</span></p>
+        <p>
+            Workflow WF-2026-004 executed the full 8-stage Agentic SDLC pipeline against
+            <a href="https://poojasaini11291.atlassian.net/browse/KAN-31">JIRA story KAN-31</a>.
+            All requirements were analysed, a FastAPI + SQLAlchemy + SQLite architecture was designed,
+            reviewed, planned, implemented, code-reviewed, and verified. Five happy-path acceptance
+            criteria were satisfied and confirmed by executed tests.
+            Pull request <a href="https://github.com/poojasaini11291/ps_capstone_claude/pull/4">#4</a>
+            was created with explicit human approval on 2026-11-01.
+        </p>
+
+        <div class="summary-grid">
+            <div class="stat-tile">
+                <div class="num">8</div>
+                <div class="label">Stages Completed</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num">3</div>
+                <div class="label">Human Approvals</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num">5/5</div>
+                <div class="label">Tests Passed</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num">0</div>
+                <div class="label">Blockers / Majors</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num">5</div>
+                <div class="label">FRs Implemented</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num">5</div>
+                <div class="label">ACs Verified</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====== WORKFLOW METADATA ====== -->
+    <section>
+        <h2>Workflow Metadata</h2>
+        <table>
+            <tbody>
+                <tr><td><strong>Workflow ID</strong></td><td>WF-2026-004</td></tr>
+                <tr><td><strong>Project</strong></td><td>Task Management REST API</td></tr>
+                <tr><td><strong>JIRA Story</strong></td><td><a href="https://poojasaini11291.atlassian.net/browse/KAN-31">KAN-31</a></td></tr>
+                <tr><td><strong>Branch</strong></td><td><code>feature/KAN-31-task-management-api</code></td></tr>
+                <tr><td><strong>Pull Request</strong></td><td><a href="https://github.com/poojasaini11291/ps_capstone_claude/pull/4">PR #4 — feat(KAN-31): implement Task Management REST API</a></td></tr>
+                <tr><td><strong>Execution Date</strong></td><td>2026-11-01</td></tr>
+                <tr><td><strong>Author</strong></td><td>Pooja Saini</td></tr>
+                <tr><td><strong>Technology Stack</strong></td><td>Python 3.11.9 · FastAPI · SQLAlchemy 2.x · Pydantic v2 · SQLite · Pytest 9.1.1</td></tr>
+                <tr><td><strong>Status</strong></td><td><span class="badge badge-approved">COMPLETED</span></td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ====== STAGE EVIDENCE ====== -->
+    <section>
+        <h2>Stage Evidence</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Stage</th>
+                    <th>Status</th>
+                    <th>Human Approved</th>
+                    <th>Artifact</th>
+                    <th>Key Findings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="stage-row">
+                    <td>1. Requirements Analysis</td>
+                    <td><span class="badge badge-approved">APPROVED</span></td>
+                    <td><span class="badge badge-human">YES</span></td>
+                    <td><a href="plans/requirements.md">requirements.md</a></td>
+                    <td>5 FRs · 5 ACs · 4 NFRs. FR-005 (DELETE) gap-filled from JIRA intent; confirmed by human.</td>
+                </tr>
+                <tr class="stage-row">
+                    <td>2. Architecture Design</td>
+                    <td><span class="badge badge-completed">COMPLETED</span></td>
+                    <td>—</td>
+                    <td><a href="plans/architecture.md">architecture.md</a></td>
+                    <td>Three-layer design: FastAPI Router → CRUD → SQLAlchemy/SQLite. 5 endpoints specified. 8 design decisions documented (DD-01–DD-08).</td>
+                </tr>
+                <tr class="stage-row">
+                    <td>3. Design Review</td>
+                    <td><span class="badge badge-approved">APPROVED</span></td>
+                    <td>—</td>
+                    <td><a href="plans/design-review.md">design-review.md</a></td>
+                    <td>0 blockers. All 5 FRs covered, all 5 ACs achievable, all 4 NFRs satisfied. 3 implementation notes (N-01 PATCH, N-02 DELETE 204, N-03 gitignore) issued.</td>
+                </tr>
+                <tr class="stage-row">
+                    <td>4. Implementation Planning</td>
+                    <td><span class="badge badge-approved">APPROVED</span></td>
+                    <td><span class="badge badge-human">YES</span></td>
+                    <td><a href="plans/impl-plan.md">impl-plan.md</a></td>
+                    <td>10 ordered tasks. Dependency chain confirmed. Test strategy: pytest + in-memory SQLite. gitignore verified for <code>tasks.db</code>.</td>
+                </tr>
+                <tr class="stage-row">
+                    <td>5. Development</td>
+                    <td><span class="badge badge-completed">COMPLETED</span></td>
+                    <td>—</td>
+                    <td><code>src/</code></td>
+                    <td>10 files created / updated. All 5 tests passed on first run. Design review notes N-01 and N-02 applied exactly as specified.</td>
+                </tr>
+                <tr class="stage-row">
+                    <td>6. Code Review</td>
+                    <td><span class="badge badge-approved">APPROVED</span></td>
+                    <td>—</td>
+                    <td><a href="plans/code-review.md">code-review.md</a></td>
+                    <td>0 blockers · 0 major · 3 minor · 2 info. All FRs and ACs confirmed implemented. N-01 and N-02 verified in source. No security issues.</td>
+                </tr>
+                <tr class="stage-row">
+                    <td>7. Verification</td>
+                    <td><span class="badge badge-passed">PASSED</span></td>
+                    <td>—</td>
+                    <td><a href="plans/verification.md">verification.md</a></td>
+                    <td>5/5 tests passed in 1.22s. 2 non-blocking third-party deprecation warnings. All 5 ACs verified by executed tests.</td>
+                </tr>
+                <tr class="stage-row">
+                    <td>8. Release / PR</td>
+                    <td><span class="badge badge-approved">APPROVED</span></td>
+                    <td><span class="badge badge-human">YES</span></td>
+                    <td><a href="https://github.com/poojasaini11291/ps_capstone_claude/pull/4">PR #4</a></td>
+                    <td>PR created: <em>feat(KAN-31): implement Task Management REST API</em>. Base branch: <code>main</code>. Explicit human approval received before creation.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ====== HUMAN APPROVALS ====== -->
+    <section>
+        <h2>Human Approvals</h2>
+        <p>Three mandatory human approval checkpoints were observed. No checkpoint was bypassed or fabricated.</p>
+        <ul class="approvals-list">
+            <li>
+                <span class="checkmark">✓</span>
+                <div>
+                    <strong>Requirements Analysis</strong> — Approved 2026-11-01<br>
+                    <span class="muted">FR-005 (DELETE) gap-fill confirmed. Explicit user confirmation received before proceeding to architecture.</span>
+                </div>
+            </li>
+            <li>
+                <span class="checkmark">✓</span>
+                <div>
+                    <strong>Implementation Planning</strong> — Approved 2026-11-01<br>
+                    <span class="muted">10-task plan reviewed and approved. Branch name, test strategy, and gitignore confirmation acknowledged by human.</span>
+                </div>
+            </li>
+            <li>
+                <span class="checkmark">✓</span>
+                <div>
+                    <strong>PR Creation (Final PR Review)</strong> — Approved 2026-11-01<br>
+                    <span class="muted">PR draft reviewed; explicit human approval received before GitHub PR #4 was created.</span>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <!-- ====== REQUIREMENTS TRACEABILITY ====== -->
+    <section>
+        <h2>Requirements Traceability</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>FR</th>
+                    <th>Description</th>
+                    <th>AC</th>
+                    <th>Endpoint</th>
+                    <th>Test</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>FR-001</td>
+                    <td>Create task with title, description, status</td>
+                    <td>AC-001</td>
+                    <td><code>POST /tasks</code> → 201</td>
+                    <td><code>test_create_task</code></td>
+                    <td><span class="badge badge-passed">PASS</span></td>
+                </tr>
+                <tr>
+                    <td>FR-002</td>
+                    <td>Return list of all tasks</td>
+                    <td>AC-002</td>
+                    <td><code>GET /tasks</code> → 200</td>
+                    <td><code>test_list_tasks</code></td>
+                    <td><span class="badge badge-passed">PASS</span></td>
+                </tr>
+                <tr>
+                    <td>FR-003</td>
+                    <td>Return single task by ID</td>
+                    <td>AC-003</td>
+                    <td><code>GET /tasks/{id}</code> → 200</td>
+                    <td><code>test_get_task</code></td>
+                    <td><span class="badge badge-passed">PASS</span></td>
+                </tr>
+                <tr>
+                    <td>FR-004</td>
+                    <td>Partially update a task</td>
+                    <td>AC-004</td>
+                    <td><code>PATCH /tasks/{id}</code> → 200</td>
+                    <td><code>test_update_task</code></td>
+                    <td><span class="badge badge-passed">PASS</span></td>
+                </tr>
+                <tr>
+                    <td>FR-005</td>
+                    <td>Delete task by ID <span class="muted">(gap-filled)</span></td>
+                    <td>AC-005</td>
+                    <td><code>DELETE /tasks/{id}</code> → 204</td>
+                    <td><code>test_delete_task</code></td>
+                    <td><span class="badge badge-passed">PASS</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ====== TEST RESULTS ====== -->
+    <section>
+        <h2>Test Results</h2>
+        <p>Command executed: <code>python -m pytest tests/test_tasks.py -v</code></p>
+        <p>Environment: Python 3.11.9 · pytest 9.1.1 · Windows 11 · in-memory SQLite (<code>sqlite:///:memory:</code>)</p>
+
+        <pre><code>============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\PoojaSaini\Downloads\EPAM CAPSTONE Projects\CLAUDE\SDLC-CLAUDE
+
+tests/test_tasks.py::test_create_task PASSED                             [ 20%]
+tests/test_tasks.py::test_list_tasks  PASSED                             [ 40%]
+tests/test_tasks.py::test_get_task    PASSED                             [ 60%]
+tests/test_tasks.py::test_update_task PASSED                             [ 80%]
+tests/test_tasks.py::test_delete_task PASSED                             [100%]
+
+======================== 5 passed, 2 warnings in 1.22s ========================</code></pre>
+
+        <p class="muted">2 non-blocking deprecation warnings emitted by third-party libraries (<code>httpx</code>/<code>starlette</code>). No warnings from application code. No tests were skipped or xfailed.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Test Function</th>
+                    <th>AC</th>
+                    <th>What Is Verified</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>test_create_task</code></td>
+                    <td>AC-001</td>
+                    <td>POST /tasks → HTTP 201; response body contains <code>id</code>, <code>title</code>, <code>description</code>, <code>status</code></td>
+                    <td><span class="badge badge-passed">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_list_tasks</code></td>
+                    <td>AC-002</td>
+                    <td>GET /tasks on empty store → 200 + <code>[]</code>; after insert → 200 + 1-element array</td>
+                    <td><span class="badge badge-passed">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_get_task</code></td>
+                    <td>AC-003</td>
+                    <td>GET /tasks/{id} → HTTP 200; all four fields match created task</td>
+                    <td><span class="badge badge-passed">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_update_task</code></td>
+                    <td>AC-004</td>
+                    <td>PATCH /tasks/{id} with only <code>status</code> → HTTP 200; only status changed, title/description unchanged</td>
+                    <td><span class="badge badge-passed">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_delete_task</code></td>
+                    <td>AC-005</td>
+                    <td>DELETE /tasks/{id} → HTTP 204; empty body; task absent from subsequent GET /tasks</td>
+                    <td><span class="badge badge-passed">PASSED</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ====== CODE REVIEW ====== -->
+    <section>
+        <h2>Code Review Summary</h2>
+        <p>Reviewed at commit <code>ac99149</code> on 2026-11-01 by Code Reviewer Agent.</p>
+
+        <div class="summary-grid" style="margin-bottom:16px;">
+            <div class="stat-tile">
+                <div class="num" style="color:#dc3545;">0</div>
+                <div class="label">Blockers</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num" style="color:#dc3545;">0</div>
+                <div class="label">Major</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num" style="color:#f59e0b;">3</div>
+                <div class="label">Minor</div>
+            </div>
+            <div class="stat-tile">
+                <div class="num" style="color:#6b9e7a;">2</div>
+                <div class="label">Info</div>
+            </div>
+        </div>
+
+        <h3>Minor Findings (non-blocking)</h3>
+        <div class="finding-minor">
+            <strong>CR-001 — src/models.py</strong><br>
+            <code>status</code> column uses Python-side <code>default="todo"</code> instead of <code>server_default</code> as specified in the plan. No functional impact — <code>crud.create_task</code> always passes the status explicitly.
+        </div>
+        <div class="finding-minor">
+            <strong>CR-002 — src/main.py</strong><br>
+            <code>Base.metadata.create_all(bind=engine)</code> runs at module import time rather than inside a FastAPI lifespan hook. Creates <code>tasks.db</code> as a side effect of test imports. No security or correctness impact; <code>tasks.db</code> is gitignored.
+        </div>
+        <div class="finding-minor">
+            <strong>CR-003 — tests/test_tasks.py</strong><br>
+            <code>override_get_db()</code> redundantly calls <code>create_all</code> on every injected session. The <code>reset_db</code> autouse fixture already manages the schema lifecycle. Harmless but wasteful.
+        </div>
+
+        <h3>Info Observations</h3>
+        <div class="finding-info">
+            <strong>CR-004 — tests/test_tasks.py</strong><br>
+            Module-level dependency override is permanent for the test process. Acceptable for a single-file suite.
+        </div>
+        <div class="finding-info">
+            <strong>CR-005 — requirements.txt</strong><br>
+            <code>httpx</code> and <code>pytest</code> carry no version lower bounds. Acceptable for local-only scope.
+        </div>
+
+        <p style="margin-top:16px;"><strong>Overall verdict: <span class="badge badge-approved">APPROVED</span></strong> — Ready to proceed to verification. No action required for any finding before PR.</p>
+    </section>
+
+    <!-- ====== KEY DECISIONS ====== -->
+    <section>
+        <h2>Key Design Decisions</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Decision</th>
+                    <th>Rationale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>DD-01</td><td>SQLAlchemy ORM over raw <code>sqlite3</code></td><td>Cleaner query code; avoids SQL injection risk from string-formatted SQL.</td></tr>
+                <tr><td>DD-03</td><td>In-memory SQLite for tests</td><td>Test isolation; no disk artefacts; <code>get_db</code> dependency override pattern.</td></tr>
+                <tr><td>DD-05</td><td>PATCH semantics for partial update</td><td>AC-004 requires only supplied fields to be updated. <code>model_dump(exclude_unset=True)</code> applied.</td></tr>
+                <tr><td>DD-06</td><td>DELETE returns 204 No Content</td><td>Standard REST convention; AC-005 requires it explicitly. <code>Response(status_code=204)</code> returned explicitly.</td></tr>
+                <tr><td>DC-01</td><td>FR-005 (DELETE) gap-filled</td><td>User story and endpoint table in JIRA both named DELETE; omission was an oversight. Human confirmed at requirements checkpoint.</td></tr>
+                <tr><td>ADD-08</td><td><code>tasks.db</code> gitignored via <code>*.db</code></td><td>Runtime file must not be committed. Verified before first commit.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ====== ARTIFACTS PRODUCED ====== -->
+    <section>
+        <h2>Artifacts Produced</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Artifact</th>
+                    <th>Path</th>
+                    <th>Produced by</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Requirements</td><td><a href="plans/requirements.md">docs/plans/requirements.md</a></td><td>Business Analyst Agent</td></tr>
+                <tr><td>Architecture</td><td><a href="plans/architecture.md">docs/plans/architecture.md</a></td><td>Solution Architect Agent</td></tr>
+                <tr><td>Design Review</td><td><a href="plans/design-review.md">docs/plans/design-review.md</a></td><td>Solution Engineer Agent</td></tr>
+                <tr><td>Implementation Plan</td><td><a href="plans/impl-plan.md">docs/plans/impl-plan.md</a></td><td>Branch-Git-Planner Agent</td></tr>
+                <tr><td>Source Code</td><td><code>src/</code> (8 Python files)</td><td>Developer Agent</td></tr>
+                <tr><td>Test Suite</td><td><code>tests/test_tasks.py</code></td><td>Developer Agent</td></tr>
+                <tr><td>Code Review</td><td><a href="plans/code-review.md">docs/plans/code-review.md</a></td><td>Code Reviewer Agent</td></tr>
+                <tr><td>Verification Report</td><td><a href="plans/verification.md">docs/plans/verification.md</a></td><td>Automation Tester Agent</td></tr>
+                <tr><td>Changelog</td><td><a href="plans/changelog.md">docs/plans/changelog.md</a></td><td>Deploy-Build-Engineer Agent</td></tr>
+                <tr><td>PR Draft</td><td><a href="plans/pr-draft.md">docs/plans/pr-draft.md</a></td><td>Deploy-Build-Engineer Agent</td></tr>
+                <tr><td>GitHub Pull Request</td><td><a href="https://github.com/poojasaini11291/ps_capstone_claude/pull/4">PR #4 on GitHub</a></td><td>Deploy-Build-Engineer Agent</td></tr>
+                <tr><td>Workflow Audit Report</td><td><code>docs/workflow-report-WF-2026-004.html</code></td><td>Chronicle Auditor Agent</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ====== NFR VERIFICATION ====== -->
+    <section>
+        <h2>Non-Functional Requirements Verification</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NFR</th>
+                    <th>Requirement</th>
+                    <th>Evidence</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>NFR-001</td>
+                    <td>Python + FastAPI</td>
+                    <td>FastAPI app on Python 3.11.9; all tests exercise the FastAPI <code>TestClient</code></td>
+                    <td><span class="badge badge-passed">SATISFIED</span></td>
+                </tr>
+                <tr>
+                    <td>NFR-002</td>
+                    <td>SQLite persistence (no external DB)</td>
+                    <td>SQLAlchemy engine targeting <code>tasks.db</code>; in-memory override for tests; no external infrastructure</td>
+                    <td><span class="badge badge-passed">SATISFIED</span></td>
+                </tr>
+                <tr>
+                    <td>NFR-003</td>
+                    <td>JSON responses</td>
+                    <td>FastAPI + Pydantic v2 automatic JSON serialisation; all <code>response.json()</code> calls succeed in tests</td>
+                    <td><span class="badge badge-passed">SATISFIED</span></td>
+                </tr>
+                <tr>
+                    <td>NFR-004</td>
+                    <td>Locally runnable, no external infra</td>
+                    <td>Uvicorn on localhost; tests run entirely locally; no network calls; no containers</td>
+                    <td><span class="badge badge-passed">SATISFIED</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ====== AUDIT INTEGRITY STATEMENT ====== -->
+    <section>
+        <h2>Audit Integrity Statement</h2>
+        <p>
+            This report was generated by the Chronicle Auditor Agent on 2026-11-01 by reading and cross-referencing
+            all SDLC artifacts listed in this document. All evidence is drawn from verified sources:
+            <code>context/workflow-context.json</code>, committed plan documents under <code>docs/plans/</code>,
+            and the GitHub pull request record.
+        </p>
+        <p>
+            No approvals, test outcomes, or stage completions have been inferred or invented.
+            The three human approval records correspond to explicit user confirmations captured in the workflow
+            execution history. The five test pass records are taken verbatim from the pytest output
+            reproduced in <a href="plans/verification.md">docs/plans/verification.md</a>.
+        </p>
+        <p class="muted">
+            Previous completed workflows WF-2026-001, WF-2026-002, and WF-2026-003 are preserved in
+            <code>context/workflow-context.json</code>. This report covers WF-2026-004 only.
+        </p>
+    </section>
+
+</body>
+</html>
