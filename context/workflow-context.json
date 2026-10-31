@@ -3,7 +3,7 @@
     "project_name": "Task Management REST API",
     "jira_story": "KAN-31",
     "jira_url": "https://poojasaini11291.atlassian.net/browse/KAN-31",
-    "current_stage": "release",
+    "current_stage": "awaiting_pr_approval",
     "status": "IN_PROGRESS",
     "human_approvals": {
         "requirements": true,
@@ -17,7 +17,9 @@
         "implementation_plan": "docs/plans/impl-plan.md",
         "source_code": "src/",
         "code_review": "docs/plans/code-review.md",
-        "verification": "docs/plans/verification.md"
+        "verification": "docs/plans/verification.md",
+        "changelog": "docs/plans/changelog.md",
+        "pr_draft": "docs/plans/pr-draft.md"
     },
     "execution_history": [
         {
@@ -135,6 +137,24 @@
                 "AC-005: test_delete_task PASSED"
             ],
             "notes": "All 5 tests executed and passed. 2 deprecation warnings from third-party libraries (httpx/starlette), no warnings from application code. Ready for GitHub PR."
+        },
+        {
+            "stage": "release_preparation",
+            "status": "AWAITING_PR_CREATION_APPROVAL",
+            "artifact": "docs/plans/pr-draft.md",
+            "human_approved": false,
+            "timestamp": "2026-11-01",
+            "changelog": "docs/plans/changelog.md",
+            "pr_draft": "docs/plans/pr-draft.md",
+            "pr_title": "feat(KAN-31): implement Task Management REST API",
+            "branch": "feature/KAN-31-task-management-api",
+            "base_branch": "main",
+            "endpoints_implemented": 5,
+            "tests_passed": 5,
+            "tests_total": 5,
+            "code_review_blockers": 0,
+            "code_review_majors": 0,
+            "notes": "Changelog and PR draft prepared. Awaiting explicit human approval before creating the GitHub PR."
         }
     ],
     "previous_workflows": [
