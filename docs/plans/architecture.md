@@ -1,185 +1,301 @@
-
 # Architecture Design
-## Task Management REST API
 
-**Workflow ID:** WF-2026-001
-**Stage:** Architecture
-**Author:** Solution Architect Agent
-**Date:** 2026-10-17
-**Input:** docs/plans/requirements.md
+## 1. Document Details
 
----
-
-## 1. Architecture Overview
-
-A single-process, monolithic FastAPI application with SQLite persistence. No external services, message queues, or cloud infrastructure. The app runs locally and serves a REST API for task CRUD operations.
+| Field         | Value |
+|---------------|-------|
+| JIRA Story    | KAN-31 |
+| Project       | Task Management REST API |
+| Workflow ID   | WF-2026-004 |
+| Prepared by   | Solution Architect Agent |
+| Date          | 2026-11-01 |
+| Status        | DRAFT — Pending Design Review |
 
 ---
 
-## 2. Architecture Diagram
+## 2. Architecture Overview
 
-```mermaid
-graph TD
-    Client["HTTP Client (curl / browser / test)"]
+The Task Management REST API is a single-process, locally-runnable HTTP service built on FastAPI. It exposes five CRUD endpoints backed by a SQLite database accessed through SQLAlchemy. Pydantic models enforce request validation and response serialisation. There is no authentication, no external infrastructure, and no background workers.
 
-    subgraph FastAPI Application
-        Router["Router\n(tasks.py)"]
-        Schemas["Pydantic Schemas\n(schemas.py)"]
-        DB["Database Layer\n(database.py)"]
-        Models["SQLAlchemy Model\n(models.py)"]
-    end
+The design follows a three-layer layout:
 
-    SQLite[("SQLite\ntasks.db")]
-
-    Client -->|HTTP Request| Router
-    Router -->|Validate| Schemas
-    Router -->|Query / Write| DB
-    DB -->|ORM| Models
-    Models -->|SQL| SQLite
-    Router -->|JSON Response| Client
+```
+HTTP layer  →  Business / Routing layer  →  Persistence layer
+(FastAPI)      (Router + CRUD)              (SQLAlchemy + SQLite)
 ```
 
 ---
 
-## 3. Components and Responsibilities
+## 3. Technology Stack
 
-| Component | File | Responsibility |
-|-----------|------|----------------|
-| Entry point | `src/main.py` | Creates the FastAPI app, includes the router |
-| Router | `src/routers/tasks.py` | Defines all 5 REST endpoints |
-| Schemas | `src/schemas.py` | Pydantic models for request validation and response serialization |
-| Models | `src/models.py` | SQLAlchemy ORM model for the Task table |
-| Database | `src/database.py` | SQLite engine, session factory, table creation |
-| Dependencies | `requirements.txt` | fastapi, uvicorn, sqlalchemy, pydantic |
-
----
-
-## 4. Data Model
-
-### Table: `tasks`
-
-| Column      | Type         | Constraints                          |
-|-------------|--------------|--------------------------------------|
-| id          | INTEGER      | PRIMARY KEY, AUTOINCREMENT           |
-| title       | VARCHAR(255) | NOT NULL                             |
-| description | TEXT         | NOT NULL                             |
-| status      | VARCHAR(20)  | NOT NULL, default `todo`             |
-
-**Valid status values:** `todo`, `in_progress`, `done`
+| Component      | Technology          | Rationale |
+|----------------|---------------------|-----------|
+| Language       | Python 3.10+        | Required by NFR-001 |
+| Web framework  | FastAPI             | Required by NFR-001; automatic OpenAPI docs |
+| ASGI server    | Uvicorn             | Standard FastAPI runtime |
+| Data layer     | SQLAlchemy 2.x      | ORM over SQLite; avoids raw SQL string building |
+| Database       | SQLite (file-based) | Required by NFR-002; bundled with Python stdlib |
+| Validation     | Pydantic v2         | Integrated with FastAPI; provides schema enforcement |
+| Testing        | Pytest + HTTPX      | Required by D-04; HTTPX drives the FastAPI test client |
 
 ---
 
-## 5. REST API Endpoints
+## 4. Component Breakdown
 
-| Method | Path          | Request Body                        | Success Response | Error Response         |
-|--------|---------------|-------------------------------------|------------------|------------------------|
-| POST   | /tasks        | `{ title, description, status? }`  | 201 + task object | 422 validation error  |
-| GET    | /tasks        | —                                   | 200 + task array | —                      |
-| GET    | /tasks/{id}   | —                                   | 200 + task object | 404 task not found    |
-| PATCH  | /tasks/{id}   | `{ title?, description?, status? }` | 200 + task object | 404 task not found    |
-| DELETE | /tasks/{id}   | —                                   | 200 + message    | 404 task not found    |
+### 4.1 Application Entry Point — `src/main.py`
+
+Responsibilities:
+- Create the `FastAPI` application instance.
+- Register the tasks router under the `/tasks` prefix.
+- Trigger database table creation on startup via `Base.metadata.create_all`.
+- Export the `app` object used by Uvicorn.
+
+### 4.2 Database Module — `src/database.py`
+
+Responsibilities:
+- Create the SQLAlchemy `engine` pointing to `tasks.db` in the project root.
+- Define `SessionLocal` (a `sessionmaker` factory).
+- Expose `Base` (declarative base) for model registration.
+- Provide a `get_db` dependency function that yields a session and closes it after each request.
+
+### 4.3 ORM Model — `src/models.py`
+
+Responsibilities:
+- Define the `Task` SQLAlchemy model mapped to the `tasks` table.
+- Declare columns: `id` (Integer, primary key, autoincrement), `title` (String, not null), `description` (String, not null), `status` (String, not null, default `"todo"`).
+
+### 4.4 Pydantic Schemas — `src/schemas.py`
+
+Responsibilities:
+- `TaskCreate` — request body for POST /tasks (title, description required; status optional, defaults to `"todo"`).
+- `TaskUpdate` — request body for PATCH /tasks/{id} (all fields optional).
+- `TaskResponse` — full task representation returned in all responses (id, title, description, status). Configured with `model_config = ConfigDict(from_attributes=True)` for ORM compatibility.
+- `StatusEnum` — `Literal["todo", "in_progress", "done"]` used in both create and update schemas to enforce allowed values (per A-02).
+
+### 4.5 CRUD Layer — `src/crud.py`
+
+Responsibilities:
+- `create_task(db, task_in)` — insert a new Task row; return the persisted object.
+- `get_tasks(db)` — return all Task rows as a list.
+- `get_task(db, task_id)` — return the Task with the given id; return `None` if not found.
+- `update_task(db, task_id, task_in)` — apply partial field updates; return the updated object (or `None`).
+- `delete_task(db, task_id)` — delete the Task row; return the deleted object (or `None`).
+
+Each function accepts a SQLAlchemy `Session` as its first argument. No business logic lives here — only database operations.
+
+### 4.6 Router — `src/routers/tasks.py`
+
+Responsibilities:
+- Define an `APIRouter` with prefix `/tasks`.
+- Implement the five endpoint handlers (see Section 6).
+- Inject the database session via `Depends(get_db)`.
+- Return appropriate HTTP status codes as specified in acceptance criteria.
+- Call CRUD functions; return `TaskResponse` instances (or lists thereof).
+
+### 4.7 Test Suite — `tests/test_tasks.py`
+
+Responsibilities:
+- Use `pytest` with FastAPI's `TestClient` (backed by HTTPX).
+- Override the `get_db` dependency to use an in-memory SQLite database so tests are isolated and leave no files on disk.
+- Cover one happy-path test per acceptance criterion (AC-001 through AC-005).
 
 ---
 
-## 6. Pydantic Schemas
+## 5. Data Model
 
-```python
-# Create — all required except status (defaults to "todo")
-class TaskCreate(BaseModel):
-    title: str
-    description: str
-    status: Literal["todo", "in_progress", "done"] = "todo"
+### 5.1 SQLite Table: `tasks`
 
-# Partial update — all optional
-class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[Literal["todo", "in_progress", "done"]] = None
+| Column      | SQLite Type | Constraints                          |
+|-------------|-------------|--------------------------------------|
+| id          | INTEGER     | PRIMARY KEY AUTOINCREMENT            |
+| title       | TEXT        | NOT NULL                             |
+| description | TEXT        | NOT NULL                             |
+| status      | TEXT        | NOT NULL, DEFAULT `'todo'`           |
 
-# Response — always includes id
-class TaskResponse(BaseModel):
-    id: int
-    title: str
-    description: str
-    status: str
+### 5.2 Allowed Status Values
 
-    class Config:
-        from_attributes = True
-```
+`todo` | `in_progress` | `done`
+
+Enforced at the Pydantic schema layer (not at the SQLite layer, to keep the schema simple).
+
+---
+
+## 6. REST API Endpoint Specification
+
+| Method | Path            | Request Body      | Success Response     | Requirement |
+|--------|-----------------|-------------------|----------------------|-------------|
+| POST   | /tasks          | `TaskCreate`      | 201 + `TaskResponse` | FR-001, AC-001 |
+| GET    | /tasks          | —                 | 200 + `TaskResponse[]` | FR-002, AC-002 |
+| GET    | /tasks/{id}     | —                 | 200 + `TaskResponse` | FR-003, AC-003 |
+| PATCH  | /tasks/{id}     | `TaskUpdate`      | 200 + `TaskResponse` | FR-004, AC-004 |
+| DELETE | /tasks/{id}     | —                 | 204 No Content       | FR-005, AC-005 |
+
+All endpoints produce and consume `application/json` (except DELETE which returns no body).
 
 ---
 
 ## 7. Data Flow
 
-### Create Task (POST /tasks)
-1. Client sends `{ title, description, status }` to `POST /tasks`
-2. FastAPI validates request against `TaskCreate` schema
-3. Router creates a SQLAlchemy `Task` object and commits to SQLite
-4. Router returns `TaskResponse` with assigned `id`, status `201`
-
-### Get All Tasks (GET /tasks)
-1. Client sends `GET /tasks`
-2. Router queries `SELECT * FROM tasks`
-3. Returns list of `TaskResponse` objects, status `200`
-
-### Get Task by ID (GET /tasks/{id})
-1. Client sends `GET /tasks/1`
-2. Router queries `SELECT * FROM tasks WHERE id = 1`
-3. If not found: returns `404` with `"Task with ID 1 does not exist"`
-4. If found: returns `TaskResponse`, status `200`
-
-### Partial Update (PATCH /tasks/{id})
-1. Client sends `PATCH /tasks/1` with subset of fields
-2. Router fetches task; 404 if not found
-3. Updates only the provided fields on the ORM object
-4. Commits and returns updated `TaskResponse`, status `200`
-
-### Delete Task (DELETE /tasks/{id})
-1. Client sends `DELETE /tasks/1`
-2. Router fetches task; 404 if not found
-3. Deletes record, commits
-4. Returns `{ "message": "Task with ID 1 deleted successfully" }`, status `200`
-
----
-
-## 8. Project File Structure
+### 7.1 Create Task (POST /tasks)
 
 ```
-src/
-├── main.py           # FastAPI app instantiation
-├── database.py       # SQLite engine, session, Base
-├── models.py         # Task ORM model
-├── schemas.py        # Pydantic schemas
-└── routers/
-    └── tasks.py      # All task endpoints
-requirements.txt
-tests/
-└── test_tasks.py     # pytest test suite (Stage 7)
+Client → POST /tasks {title, description, status?}
+       → Router: validate body against TaskCreate
+       → crud.create_task(db, task_in)
+       → SQLite INSERT INTO tasks
+       ← 201 Created {id, title, description, status}
 ```
 
----
-
-## 9. Dependencies
+### 7.2 List Tasks (GET /tasks)
 
 ```
-fastapi
-uvicorn[standard]
-sqlalchemy
-pydantic
-pytest
-httpx
+Client → GET /tasks
+       → Router: no body validation required
+       → crud.get_tasks(db)
+       → SQLite SELECT * FROM tasks
+       ← 200 OK [{id, title, description, status}, ...]
+```
+
+### 7.3 Get Single Task (GET /tasks/{id})
+
+```
+Client → GET /tasks/{id}
+       → Router: path parameter validated as integer
+       → crud.get_task(db, id)
+       → SQLite SELECT * FROM tasks WHERE id = ?
+       ← 200 OK {id, title, description, status}
+```
+
+### 7.4 Update Task (PATCH /tasks/{id})
+
+```
+Client → PATCH /tasks/{id} {title?, description?, status?}
+       → Router: validate body against TaskUpdate (all optional)
+       → crud.update_task(db, id, task_in)
+       → SQLite UPDATE tasks SET ... WHERE id = ?
+       ← 200 OK {id, title, description, status}
+```
+
+### 7.5 Delete Task (DELETE /tasks/{id})
+
+```
+Client → DELETE /tasks/{id}
+       → Router: path parameter validated as integer
+       → crud.delete_task(db, id)
+       → SQLite DELETE FROM tasks WHERE id = ?
+       ← 204 No Content
 ```
 
 ---
 
-## 10. Architecture Decisions
+## 8. Directory Structure
 
-| Decision | Choice | Reason |
-|----------|--------|--------|
-| Web framework | FastAPI | Requirement; built-in validation via Pydantic |
-| ORM | SQLAlchemy (Core + ORM) | Standard Python ORM for SQLite; no extra setup |
-| Database | SQLite file (`tasks.db`) | Requirement; zero-config, local persistence |
-| Update method | PATCH (partial) | Per clarified requirement |
-| Status enforcement | Pydantic `Literal` type | Validated at request time, no separate validator needed |
-| ID generation | SQLite AUTOINCREMENT | Requirement; simplest approach |
-| No auth layer | Intentional | Out of scope per requirements |
+```
+SDLC-CLAUDE/
+├── src/
+│   ├── __init__.py
+│   ├── main.py             ← FastAPI app, startup, router registration
+│   ├── database.py         ← engine, SessionLocal, Base, get_db
+│   ├── models.py           ← Task ORM model
+│   ├── schemas.py          ← TaskCreate, TaskUpdate, TaskResponse, StatusEnum
+│   ├── crud.py             ← create/get/update/delete task functions
+│   └── routers/
+│       ├── __init__.py
+│       └── tasks.py        ← APIRouter with 5 endpoints
+├── tests/
+│   └── test_tasks.py       ← pytest happy-path tests (in-memory DB)
+├── tasks.db                ← SQLite file (created at runtime, gitignored)
+├── requirements.txt        ← fastapi, uvicorn, sqlalchemy, httpx, pytest
+└── docs/
+    └── plans/
+        ├── requirements.md
+        └── architecture.md ← this document
+```
+
+> `tasks.db` must be added to `.gitignore` to prevent committing runtime data.
+
+---
+
+## 9. Dependency Injection Diagram
+
+```
+FastAPI app
+└── /tasks router
+    └── endpoint handlers
+        └── Depends(get_db)
+            └── SessionLocal()  →  SQLite tasks.db
+```
+
+---
+
+## 10. Architecture Diagram (Mermaid)
+
+```mermaid
+graph TD
+    Client["HTTP Client\n(curl / browser / test)"]
+
+    subgraph FastAPI Application
+        direction TB
+        Main["main.py\nFastAPI app + startup"]
+        Router["routers/tasks.py\nAPIRouter /tasks"]
+        CRUD["crud.py\nCRUD operations"]
+        Schemas["schemas.py\nPydantic models"]
+        DB["database.py\nengine + session + get_db"]
+        Models["models.py\nTask ORM model"]
+    end
+
+    SQLite[("tasks.db\nSQLite")]
+
+    Client -- "HTTP request" --> Main
+    Main --> Router
+    Router -- "validate / serialise" --> Schemas
+    Router -- "call" --> CRUD
+    CRUD -- "ORM queries" --> DB
+    DB -- "SQL" --> SQLite
+    DB --> Models
+    CRUD -- "returns ORM objects" --> Router
+    Router -- "serialise to JSON" --> Client
+```
+
+---
+
+## 11. Constraints and Design Decisions
+
+| # | Decision | Rationale |
+|---|----------|-----------|
+| DD-01 | SQLAlchemy ORM instead of raw `sqlite3` | Cleaner query code; avoids string-formatted SQL; consistent with existing project conventions |
+| DD-02 | Single `tasks.db` file in project root | Simplest path for a locally-run service; no configuration needed |
+| DD-03 | In-memory SQLite for tests | Tests remain isolated and leave no artefacts; matches the pattern from previous workflow |
+| DD-04 | `StatusEnum` enforced in Pydantic only | Keeps the SQLite schema minimal; validation at the API layer is sufficient for happy-path scope |
+| DD-05 | PATCH semantics for partial update | AC-004 requires that only supplied fields are updated; PUT would replace the entire resource |
+| DD-06 | DELETE returns 204 No Content | Standard REST convention; AC-005 requires this explicitly |
+| DD-07 | No authentication or middleware | A-04 and A-07 exclude auth and multi-user; no added complexity |
+| DD-08 | Tasks router registered at `/tasks` prefix | Clean URL namespace; router file stays free of prefix duplication |
+
+---
+
+## 12. Requirements Coverage
+
+| Requirement | Addressed by |
+|-------------|--------------|
+| FR-001 (create task) | POST /tasks → crud.create_task |
+| FR-002 (list tasks) | GET /tasks → crud.get_tasks |
+| FR-003 (get by id) | GET /tasks/{id} → crud.get_task |
+| FR-004 (partial update) | PATCH /tasks/{id} → crud.update_task |
+| FR-005 (delete) | DELETE /tasks/{id} → crud.delete_task |
+| NFR-001 (Python + FastAPI) | FastAPI application on Python 3.10+ |
+| NFR-002 (SQLite) | SQLAlchemy engine targeting tasks.db |
+| NFR-003 (JSON responses) | FastAPI + Pydantic automatic JSON serialisation |
+| NFR-004 (local execution) | Uvicorn on localhost; no cloud infra |
+
+---
+
+## 13. Out of Scope (confirmed)
+
+The following are excluded per requirements Section 9 and are not represented in this architecture:
+
+- Authentication / authorisation
+- Pagination or filtering on GET /tasks
+- Task priorities, due dates, tags, or attachments
+- Error-path test coverage (404 not covered by tests, though the 404 HTTP response itself must still be emitted by the framework)
+- Containerisation or cloud deployment

@@ -13,15 +13,32 @@ Execute the SDLC using specialized agents.
 Use the Agent tool to delegate tasks to the
 appropriate agents.
 
-## Stage 1: Requirements
+## Stage 1: Requirements Analysis — JIRA
 
-Delegate to business-analyst.                  
+1. Ask the user for an existing JIRA Story Key or URL
+   if it is not already provided.
 
-Output:
-docs/plans/requirements.md
+2. Invoke the business-analyst agent.
 
-Ask the user essential clarification questions.
-Stop for human approval.
+3. Pass the JIRA Story Key or URL to the agent.
+
+4. The agent must retrieve the actual JIRA story
+   using the configured JIRA integration.
+
+5. Analyze the story and ask essential clarification
+   questions.
+
+6. Generate:
+   docs/plans/requirements.md
+
+7. Request human approval.
+
+8. After approval, update workflow context.
+
+9. Continue to the Solution Architect using the
+   approved requirements document.
+
+Do not proceed if JIRA retrieval or human approval fails.
 
 ## Stage 2: Architecture
 

@@ -1,22 +1,21 @@
 {
-    "workflow_id": "WF-2026-001",
-    "project_name": "Task Management API",
-    "current_stage": "complete",
-    "status": "COMPLETED",
+    "workflow_id": "WF-2026-004",
+    "project_name": "Task Management REST API",
+    "jira_story": "KAN-31",
+    "jira_url": "https://poojasaini11291.atlassian.net/browse/KAN-31",
+    "current_stage": "code_review",
+    "status": "IN_PROGRESS",
     "human_approvals": {
         "requirements": true,
         "implementation_plan": true,
-        "pr_merge": true
+        "pr_creation": false
     },
     "artifacts": {
         "requirements": "docs/plans/requirements.md",
         "architecture": "docs/plans/architecture.md",
         "design_review": "docs/plans/design-review.md",
         "implementation_plan": "docs/plans/impl-plan.md",
-        "code_review": "docs/plans/code-review.md",
-        "verification": "docs/plans/verification.md",
-        "pull_request": "https://github.com/poojasaini11291/ps_capstone_claude/pull/1",
-        "workflow_report": "docs/workflow-report-WF-2026-001.html"
+        "source_code": "src/"
     },
     "execution_history": [
         {
@@ -24,74 +23,82 @@
             "status": "COMPLETED",
             "artifact": "docs/plans/requirements.md",
             "human_approved": true,
-            "timestamp": "2026-10-17"
+            "timestamp": "2026-11-01",
+            "source_verified": true,
+            "approval": "Explicit user approval received. FR-005 (DELETE) gap-fill confirmed.",
+            "functional_requirements": 5,
+            "acceptance_criteria": 5,
+            "non_functional_requirements": 4
         },
         {
             "stage": "architecture",
             "status": "COMPLETED",
             "artifact": "docs/plans/architecture.md",
             "human_approved": false,
-            "timestamp": "2026-10-17"
+            "timestamp": "2026-11-01",
+            "components": ["main.py", "database.py", "models.py", "schemas.py", "crud.py", "routers/tasks.py"],
+            "endpoints": 5,
+            "technology": "FastAPI + SQLAlchemy + SQLite"
         },
         {
             "stage": "design_review",
             "status": "COMPLETED",
             "artifact": "docs/plans/design-review.md",
             "human_approved": false,
-            "timestamp": "2026-10-17"
+            "timestamp": "2026-11-01",
+            "review_status": "APPROVED",
+            "frs_covered": 5,
+            "acs_achievable": 5,
+            "nfrs_satisfied": 4,
+            "architecture_changes_required": false,
+            "notes": ["N-01: PATCH partial update via exclude_unset", "N-02: DELETE must return Response(204)", "N-03: tasks.db in .gitignore"]
         },
         {
             "stage": "implementation_planning",
             "status": "COMPLETED",
             "artifact": "docs/plans/impl-plan.md",
             "human_approved": true,
-            "timestamp": "2026-10-17"
+            "timestamp": "2026-11-01",
+            "approval": "Explicit user approval received 2026-11-01",
+            "branch": "feature/KAN-31-task-management-api",
+            "tasks_defined": 10,
+            "files_planned": ["requirements.txt", "src/__init__.py", "src/routers/__init__.py", "src/database.py", "src/models.py", "src/schemas.py", "src/crud.py", "src/routers/tasks.py", "src/main.py", "tests/test_tasks.py"],
+            "test_strategy": "pytest + HTTPX TestClient + in-memory SQLite override",
+            "acs_covered": ["AC-001", "AC-002", "AC-003", "AC-004", "AC-005"],
+            "gitignore_verified": true,
+            "notes": ["tasks.db covered by *.db glob in .gitignore", "PATCH: model_dump(exclude_unset=True) required", "DELETE: explicit Response(status_code=204) required"]
         },
         {
             "stage": "development",
             "status": "COMPLETED",
             "artifact": "src/",
             "human_approved": false,
-            "timestamp": "2026-10-17",
-            "branch": "feature/task-management-api",
-            "commits": ["da031c0", "4fdd348"]
+            "timestamp": "2026-11-01",
+            "branch": "feature/KAN-31-task-management-api",
+            "files_created": ["src/crud.py", "tests/test_tasks.py"],
+            "files_modified": ["requirements.txt", "src/database.py", "src/models.py", "src/schemas.py", "src/routers/tasks.py", "src/main.py"],
+            "tests_passed": 5,
+            "tests_total": 5,
+            "test_result": "ALL PASSED",
+            "test_command": "pytest tests/test_tasks.py -v",
+            "test_coverage": ["AC-001: test_create_task PASSED", "AC-002: test_list_tasks PASSED", "AC-003: test_get_task PASSED", "AC-004: test_update_task PASSED", "AC-005: test_delete_task PASSED"],
+            "design_review_notes_applied": ["N-01: model_dump(exclude_unset=True) in crud.update_task", "N-02: Response(status_code=204) in delete endpoint", "N-03: tasks.db gitignored by *.db"]
+        }
+    ],
+    "previous_workflows": [
+        {
+            "workflow_id": "WF-2026-003",
+            "project_name": "Calculator Web Application",
+            "jira_story": "KAN-25",
+            "status": "COMPLETED",
+            "pull_request": "https://github.com/poojasaini11291/ps_capstone_claude/pull/3"
         },
         {
-            "stage": "code_review",
+            "workflow_id": "WF-2026-002",
+            "project_name": "Task Management API",
+            "jira_story": "KAN-24",
             "status": "COMPLETED",
-            "artifact": "docs/plans/code-review.md",
-            "human_approved": false,
-            "timestamp": "2026-10-17",
-            "verdict": "PASS",
-            "blockers": 0,
-            "findings": 3
-        },
-        {
-            "stage": "verification",
-            "status": "COMPLETED",
-            "artifact": "docs/plans/verification.md",
-            "human_approved": false,
-            "timestamp": "2026-10-17",
-            "tests_passed": 15,
-            "tests_total": 15,
-            "result": "ALL PASSED"
-        },
-        {
-            "stage": "release",
-            "status": "COMPLETED",
-            "artifact": "https://github.com/poojasaini11291/ps_capstone_claude/pull/1",
-            "human_approved": true,
-            "timestamp": "2026-10-17",
-            "pr_number": 1,
-            "pr_merged": true,
-            "merge_commit": "8138961"
-        },
-        {
-            "stage": "workflow_audit",
-            "status": "COMPLETED",
-            "artifact": "docs/workflow-report-WF-2026-001.html",
-            "human_approved": false,
-            "timestamp": "2026-10-17"
+            "pull_request": "https://github.com/poojasaini11291/ps_capstone_claude/pull/2"
         }
     ]
 }

@@ -1,67 +1,45 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
-from typing import List
 
-from database import get_db
-from models import Task
-from schemas import TaskCreate, TaskUpdate, TaskResponse
+from src.database import get_db
+from src.schemas import TaskCreate, TaskUpdate, TaskResponse
+import src.crud as crud
 
 router = APIRouter()
 
 
 @router.post("/", response_model=TaskResponse, status_code=201)
-def create_task(task: TaskCreate, db: Session = Depends(get_db)):
-    db_task = Task(
-        title=task.title,
-        description=task.description,
-        status=task.status,
-    )
-    db.add(db_task)
-    db.commit()
-    db.refresh(db_task)
-    return db_task
+def create_task(task_in: TaskCreate, db: Session = Depends(get_db)) -> TaskResponse:
+    return crud.create_task(db=db, task_in=task_in)
 
 
-@router.get("/", response_model=List[TaskResponse])
-def get_tasks(db: Session = Depends(get_db)):
-    return db.query(Task).all()
+@router.get("/", response_model=list[TaskResponse])
+def list_tasks(db: Session = Depends(get_db)) -> list[TaskResponse]:
+    return crud.get_tasks(db=db)
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
-def get_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.query(Task).filter(Task.id == task_id).first()
-    if not task:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Task with ID {task_id} does not exist",
-        )
+def get_task(task_id: int, db: Session = Depends(get_db)) -> TaskResponse:
+    task = crud.get_task(db=db, task_id=task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail=f"Task with id {task_id} not found")
     return task
 
 
 @router.patch("/{task_id}", response_model=TaskResponse)
-def update_task(task_id: int, task_update: TaskUpdate, db: Session = Depends(get_db)):
-    task = db.query(Task).filter(Task.id == task_id).first()
-    if not task:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Task with ID {task_id} does not exist",
-        )
-    update_data = task_update.model_dump(exclude_none=True)
-    for field, value in update_data.items():
-        setattr(task, field, value)
-    db.commit()
-    db.refresh(task)
+def update_task(
+    task_id: int, task_in: TaskUpdate, db: Session = Depends(get_db)
+) -> TaskResponse:
+    task = crud.update_task(db=db, task_id=task_id, task_in=task_in)
+    if task is None:
+        raise HTTPException(status_code=404, detail=f"Task with id {task_id} not found")
     return task
 
 
-@router.delete("/{task_id}")
-def delete_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.query(Task).filter(Task.id == task_id).first()
-    if not task:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Task with ID {task_id} does not exist",
-        )
-    db.delete(task)
-    db.commit()
-    return {"message": f"Task with ID {task_id} deleted successfully"}
+@router.delete("/{task_id}", status_code=204)
+def delete_task(task_id: int, db: Session = Depends(get_db)) -> Response:
+    task = crud.delete_task(db=db, task_id=task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail=f"Task with id {task_id} not found")
+    # N-02: must return Response(status_code=204) explicitly — decorator alone is insufficient
+    return Response(status_code=204)
