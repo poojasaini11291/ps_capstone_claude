@@ -1,130 +1,191 @@
-
 # Code Review
-## Task Management REST API
 
-**Workflow ID:** WF-2026-001
-**Stage:** Code Review
-**Author:** Code Reviewer Agent
-**Date:** 2026-10-17
-**Branch:** feature/task-management-api
-**Inputs:** docs/plans/requirements.md, docs/plans/architecture.md, src/
+## 1. Document Details
 
----
-
-## 1. Review Summary
-
-The implementation is clean, readable, and correctly structured. All 8 functional requirements are satisfied. The code aligns with the approved architecture. No blockers or major issues were found. Three minor findings are recorded — none require rework before testing.
-
-**Verdict: PASS — proceed to verification.**
-
----
-
-## 2. Requirements Compliance
-
-| Req ID | Requirement | File | Status |
-|--------|-------------|------|--------|
-| FR-001 | Create task | `routers/tasks.py:12-22` | ✅ POST `/tasks/` with `TaskCreate` validation; returns 201 + task object |
-| FR-002 | View all tasks | `routers/tasks.py:25-27` | ✅ GET `/tasks/` returns full list |
-| FR-003 | View by ID | `routers/tasks.py:30-38` | ✅ GET `/tasks/{task_id}` with 404 on miss |
-| FR-004 | Partial update | `routers/tasks.py:41-54` | ✅ PATCH with `model_dump(exclude_none=True)` updates only supplied fields |
-| FR-005 | Delete task | `routers/tasks.py:57-67` | ✅ DELETE with 404 on miss, returns confirmation message |
-| FR-006 | Auto-increment ID | `models.py:8` | ✅ `autoincrement=True`, `primary_key=True` |
-| FR-007 | Status enum | `schemas.py:8,14` | ✅ `Literal["todo","in_progress","done"]` in both `TaskCreate` and `TaskUpdate` |
-| FR-008 | 404 with message | `routers/tasks.py:34-37,44-48,61-64` | ✅ `"Task with ID {id} does not exist"` in all three endpoints |
-
-**Compliance: 8 / 8 — complete.**
+| Field          | Value |
+|----------------|-------|
+| JIRA Story     | KAN-31 |
+| Project        | Task Management REST API |
+| Workflow ID    | WF-2026-004 |
+| Reviewed by    | Code Reviewer Agent |
+| Date           | 2026-11-01 |
+| Branch         | feature/KAN-31-task-management-api |
+| Latest Commit  | ac99149 |
+| Input — Requirements    | docs/plans/requirements.md (APPROVED) |
+| Input — Implementation Plan | docs/plans/impl-plan.md (APPROVED) |
+| Status         | APPROVED — No BLOCKER or MAJOR findings |
 
 ---
 
-## 3. Architecture Alignment
+## 2. Review Scope
 
-| Architecture Item | Expected | Actual | Status |
-|-------------------|----------|--------|--------|
-| File structure | `src/main.py`, `database.py`, `models.py`, `schemas.py`, `routers/tasks.py` | All present | ✅ |
-| DB session pattern | `get_db()` generator with `Depends` | `database.py:13-18` | ✅ |
-| Pydantic v2 config | `ConfigDict(from_attributes=True)` | `schemas.py:18` | ✅ |
-| PATCH partial update | `model_dump(exclude_none=True)` | `routers/tasks.py:49` | ✅ |
-| Router prefix | `/tasks` | `main.py:9` | ✅ |
-| Table creation | `create_tables()` on startup | `main.py:5` | ✅ |
+Files reviewed:
 
----
-
-## 4. Findings
-
-### F-001 — `declarative_base()` deprecated in SQLAlchemy 2.x (MINOR)
-
-**File:** `src/database.py:10`
-**Code:** `Base = declarative_base()`
-**Issue:** In SQLAlchemy 2.0+, `declarative_base()` is a legacy API that emits a `MovedIn20Warning`. The modern approach is:
-```python
-from sqlalchemy.orm import DeclarativeBase
-class Base(DeclarativeBase):
-    pass
-```
-**Impact:** Deprecation warning in logs; no functional impact on SQLAlchemy 2.1.4.
-**Recommendation:** Update before future SQLAlchemy upgrades remove the legacy API.
-**Severity:** MINOR — does not block testing or functionality.
+| File | Purpose |
+|------|---------|
+| `src/database.py` | SQLAlchemy engine, session factory, Base, get_db dependency |
+| `src/models.py` | ORM model for the tasks table |
+| `src/schemas.py` | Pydantic v2 request/response models and status enum |
+| `src/crud.py` | All five database operations |
+| `src/routers/tasks.py` | FastAPI APIRouter with five HTTP endpoints |
+| `src/main.py` | Application entry point |
+| `tests/test_tasks.py` | Happy-path pytest test suite |
+| `requirements.txt` | Runtime and test dependencies |
 
 ---
 
-### F-002 — 404 fetch pattern duplicated across 3 endpoints (MINOR)
+## 3. Requirements Compliance
 
-**Files:** `src/routers/tasks.py:32-37`, `43-48`, `59-64`
-**Issue:** The "fetch task by id, raise 404 if not found" pattern appears identically in `get_task`, `update_task`, and `delete_task`. This is a refactor candidate:
-```python
-def get_task_or_404(task_id: int, db: Session) -> Task:
-    task = db.query(Task).filter(Task.id == task_id).first()
-    if not task:
-        raise HTTPException(404, detail=f"Task with ID {task_id} does not exist")
-    return task
-```
-**Impact:** None — the duplication is 3 occurrences and fully readable as-is.
-**Recommendation:** Optional refactor; acceptable for current scope.
-**Severity:** MINOR — no functional issue.
+### 3.1 Functional Requirements
 
----
+| FR | Description | Status | Evidence |
+|----|-------------|--------|----------|
+| FR-001 | Create task with title, description, status | PASS | `POST /` in `routers/tasks.py`; `crud.create_task`; `TaskCreate` schema |
+| FR-002 | Return list of all tasks | PASS | `GET /` in `routers/tasks.py`; `crud.get_tasks` |
+| FR-003 | Return single task by ID | PASS | `GET /{task_id}` in `routers/tasks.py`; `crud.get_task` |
+| FR-004 | Partially update a task | PASS | `PATCH /{task_id}` in `routers/tasks.py`; `crud.update_task` with `model_dump(exclude_unset=True)` |
+| FR-005 | Delete a task by ID | PASS | `DELETE /{task_id}` in `routers/tasks.py`; `crud.delete_task` |
 
-### F-003 — `create_tables()` called at module import time (MINOR)
+All 5 functional requirements are correctly implemented.
 
-**File:** `src/main.py:5`
-**Code:** `create_tables()` called at module level before `app` is defined.
-**Issue:** Any test that imports `main` will trigger `create_tables()`, which creates `tasks.db` in the current working directory. For happy-path tests using a real DB this is acceptable, but the test runner must be launched from `src/` to resolve the relative path `./tasks.db` correctly.
-**Impact:** Tests will fail with a path error if run from the project root without `cd src/` first.
-**Recommendation:** Automation tester must run pytest from `src/` or configure `pythonpath` in `pytest.ini`. No code change required.
-**Severity:** MINOR — test execution note, not a code defect.
+### 3.2 Acceptance Criteria
 
----
+| AC | Description | Status | Test | Evidence |
+|----|-------------|--------|------|----------|
+| AC-001 | POST /tasks → 201 + task object with id | PASS | `test_create_task` | `status_code=201`, `response_model=TaskResponse`; response asserts id, title, description, status |
+| AC-002 | GET /tasks → 200 + JSON array (empty when empty) | PASS | `test_list_tasks` | Returns `[]` on empty; returns 1-element array after insert |
+| AC-003 | GET /tasks/{id} → 200 + matching task | PASS | `test_get_task` | Retrieves by id; asserts all fields match |
+| AC-004 | PATCH /tasks/{id} → 200; only supplied fields updated | PASS | `test_update_task` | Only `status` patched; title and description verified unchanged |
+| AC-005 | DELETE /tasks/{id} → 204 + task removed | PASS | `test_delete_task` | Returns 204; asserts `response.content == b""`; task absent from list |
 
-## 5. Security Review
+All 5 acceptance criteria are met.
 
-| Check | Result |
-|-------|--------|
-| SQL injection | ✅ ORM used throughout — no raw SQL |
-| Input validation | ✅ Pydantic validates all inputs at request time |
-| Status enum enforcement | ✅ `Literal` type rejects invalid values with 422 |
-| Secrets in code | ✅ None — only `sqlite:///./tasks.db` (local path, not a secret) |
-| Authentication | N/A — intentionally out of scope per requirements |
+### 3.3 Non-Functional Requirements
 
----
+| NFR | Requirement | Status |
+|-----|-------------|--------|
+| NFR-001 | Python + FastAPI | PASS |
+| NFR-002 | SQLite persistence via SQLAlchemy | PASS |
+| NFR-003 | JSON responses | PASS — FastAPI serialises all responses via Pydantic |
+| NFR-004 | Locally runnable, no external infrastructure | PASS |
 
-## 6. Readability
+### 3.4 Design Review Notes
 
-| Criterion | Assessment |
-|-----------|------------|
-| Naming | Clear: `create_task`, `get_tasks`, `get_task`, `update_task`, `delete_task` |
-| Function length | All functions ≤ 12 lines |
-| Module size | All files ≤ 25 lines |
-| No unnecessary comments | ✅ Code is self-documenting |
-| No dead code | ✅ Every import and function is used |
+| Note | Requirement | Status | Evidence |
+|------|-------------|--------|----------|
+| N-01 | `crud.update_task` must use `model_dump(exclude_unset=True)` | PASS | `crud.py` line 32: `for field, value in task_in.model_dump(exclude_unset=True).items()` |
+| N-02 | DELETE endpoint must return `Response(status_code=204)` explicitly | PASS | `routers/tasks.py` line 45: `return Response(status_code=204)` |
+
+Both critical design review notes are satisfied exactly as specified.
 
 ---
 
-## 7. Blocking Findings
+## 4. File-by-File Findings
 
-**None.** All findings are MINOR. No developer rework required before proceeding to verification.
+### 4.1 `src/database.py`
+
+No issues. The file correctly provides `engine`, `SessionLocal`, `Base`, and `get_db()`. The `connect_args={"check_same_thread": False}` setting is required for SQLite under FastAPI's threaded request model. The `get_db()` generator closes the session in `finally`, ensuring cleanup on both success and error paths.
+
+### 4.2 `src/models.py`
+
+**Finding CR-001** — MINOR
+
+`status` column uses Python-side `default="todo"` rather than `server_default="todo"` as stated in the implementation plan (TASK-05). For this application there is no functional difference — `create_task` in `crud.py` always explicitly passes `status=task_in.status` (which defaults to `"todo"` in the `TaskCreate` schema) — but the implementation deviates from the documented spec.
+
+No other issues. Columns match the data model: `id` (Integer, PK, autoincrement), `title` (String(255), not null), `description` (String, not null), `status` (String(20), not null).
+
+### 4.3 `src/schemas.py`
+
+No issues. `StatusEnum` as `Literal["todo", "in_progress", "done"]` correctly enforces assumption A-02. `TaskCreate` requires title and description with optional defaulted status. `TaskUpdate` makes all fields optional, enabling partial update. `TaskResponse` includes `ConfigDict(from_attributes=True)` for ORM-to-Pydantic conversion.
+
+### 4.4 `src/crud.py`
+
+No issues. All five functions are correctly implemented:
+
+- `create_task`: Inserts, commits, refreshes, returns persisted object.
+- `get_tasks`: Returns all rows.
+- `get_task`: Filters by id, returns first or None.
+- `update_task`: **N-01 satisfied** — uses `model_dump(exclude_unset=True)`; setattr loop applies only supplied fields; commits and refreshes.
+- `delete_task`: Fetches, deletes, commits, returns the deleted object (used by the router for 404 detection).
+
+No raw SQL, no injection risk. Uses SQLAlchemy ORM parameterisation throughout.
+
+### 4.5 `src/routers/tasks.py`
+
+No issues. All five endpoints are correctly defined with the required decorators, status codes, and response models. The `Response` import is present. N-02 is satisfied on line 45.
+
+The 404 `HTTPException` on not-found paths is appropriate and required for the happy-path test that verifies task removal.
+
+### 4.6 `src/main.py`
+
+No issues. The import order is correct: `from src.routers.tasks import router as tasks_router` (line 4) transitively imports `models.py`, registering the `Task` model with `Base` before `Base.metadata.create_all(bind=engine)` is called (line 7). The router is registered with the correct `/tasks` prefix and `"tasks"` tag.
+
+**Finding CR-002** — MINOR
+
+`Base.metadata.create_all(bind=engine)` executes at module import time rather than inside a startup event or lifespan context manager. When tests import `src.main`, this call runs and creates `tasks.db` on disk as a side effect, even though tests use an in-memory override. The file is covered by `*.db` in `.gitignore` and is not used by any test, so there is no functional or security impact. Consider moving `create_all` into a FastAPI lifespan function in a future iteration to avoid the side-effect import.
+
+### 4.7 `tests/test_tasks.py`
+
+No issues with test correctness. All five acceptance criteria have dedicated test functions with appropriate assertions.
+
+**Finding CR-003** — MINOR
+
+`override_get_db()` calls `Base.metadata.create_all(bind=test_engine)` on every injected database session. The `reset_db` autouse fixture already manages the schema lifecycle (drop + create before each test). The `create_all` inside the override is therefore redundant. It is harmless but marginally wasteful; removing it would simplify the override function.
+
+**Finding CR-004** — INFO
+
+`app.dependency_overrides[get_db] = override_get_db` is set at module level (outside any fixture). This permanently replaces the dependency for the lifetime of the test process. This is acceptable for a single-file test suite targeting a single app instance, but it would be safer to scope the override inside a fixture for larger test suites.
+
+**Finding CR-005** — INFO
+
+`httpx` and `pytest` in `requirements.txt` carry no version lower bounds. For the local-only scope of this project this is acceptable. A future production deployment would benefit from pinned versions to ensure reproducibility.
 
 ---
 
-## 8. Final Verdict
+## 5. Security Observations
 
-**PASS — no blockers. Proceed to Stage 7: Verification.**
+| Area | Finding |
+|------|---------|
+| SQL injection | No risk — SQLAlchemy ORM with parameterised queries throughout; no raw SQL |
+| Hardcoded secrets | None present |
+| Database URL | `sqlite:///./tasks.db` — local file path, no credentials |
+| Authentication | None — expected; A-04 explicitly excludes auth from scope |
+| Input validation | Pydantic validates all request bodies; `StatusEnum` rejects invalid status values |
+
+No security issues found within the defined project scope.
+
+---
+
+## 6. Findings Summary
+
+| ID | File | Severity | Description |
+|----|------|----------|-------------|
+| CR-001 | `src/models.py` | MINOR | `status` column uses Python-side `default` instead of `server_default` as specified in the plan |
+| CR-002 | `src/main.py` | MINOR | `create_all` runs at module import time, creating `tasks.db` as a side effect of test imports |
+| CR-003 | `tests/test_tasks.py` | MINOR | `override_get_db` redundantly calls `create_all` on every request; `reset_db` fixture already manages the schema |
+| CR-004 | `tests/test_tasks.py` | INFO | Module-level dependency override is permanent for the test process; acceptable for single-file suite |
+| CR-005 | `requirements.txt` | INFO | `httpx` and `pytest` carry no version bounds; acceptable for local use |
+
+**Blockers**: 0
+**Major**: 0
+**Minor**: 3
+**Info**: 2
+
+---
+
+## 7. Overall Assessment
+
+**APPROVED — Ready to proceed to Verification.**
+
+The implementation fully satisfies all 5 functional requirements (FR-001 through FR-005), all 5 acceptance criteria (AC-001 through AC-005), and both critical design review notes (N-01: `model_dump(exclude_unset=True)` and N-02: explicit `Response(status_code=204)`). The code is simple, readable, and well-structured. No BLOCKER or MAJOR findings were identified. The three MINOR findings are low-risk deviations that do not affect correctness or the happy-path test suite.
+
+---
+
+## 8. Approval Status
+
+**Status**: APPROVED
+
+Reviewed by: Code Reviewer Agent
+Date: 2026-11-01
+JIRA Story: KAN-31
+Workflow ID: WF-2026-004
